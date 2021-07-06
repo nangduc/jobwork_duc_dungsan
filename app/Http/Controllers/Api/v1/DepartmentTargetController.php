@@ -23,6 +23,7 @@ class DepartmentTargetController extends Controller
   {
     $this->departmentTarget = $departmentTarget;
     $this->department = $department;
+    $this->employeeTarget = $employeeTarget;
   }
 
   /**
