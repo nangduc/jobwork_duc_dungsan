@@ -10,7 +10,7 @@ class EmployeeTarget extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'department_targets';
+    protected $table = 'employee_targets';
     protected $fillable = [
       'user_id',
       'targets',

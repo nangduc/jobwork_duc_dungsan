@@ -58,6 +58,14 @@ class User extends Authenticatable
     'active' => 'boolean',
   ];
 
+
+  public function employee_target()
+  {
+    return $this->hasMany(EmployeeTarget::class);
+  }
+
+
+
   public function creator()
   {
     return $this->belongsTo(User::class, 'created_by');

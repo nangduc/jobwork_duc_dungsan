@@ -35,7 +35,6 @@ class TaskProgressController extends Controller
       ->where('task_id', $taskId)
       ->ordered()
       ->paginated($request->length);
-
     return TaskProgressResource::collection($taskProgresses);
   }
 
@@ -47,7 +46,7 @@ class TaskProgressController extends Controller
   public function store(TaskProgressRequest $request)
   {
     $taskProgress = $this->taskProgress->create($request->all());
-
+    
     return response()->json([
       'message' => 'Created successfully!',
       'data' => new TaskProgressResource($taskProgress->load([

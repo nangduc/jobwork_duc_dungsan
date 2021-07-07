@@ -8,10 +8,13 @@ use App\Models\DepartmentTarget;
 use Illuminate\Http\Request;
 use App\Http\Resources\DepartmentTarget\DepartmentTargetCollection;
 use App\Http\Requests\DepartmentTargetRequest;
+use App\Http\Requests\DepartmentTargetUpdateRequest;
 use App\Models\Department;
 use App\Models\EmployeeTarget;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DepartmentTargetController extends Controller
 {
@@ -19,7 +22,7 @@ class DepartmentTargetController extends Controller
   protected $department;
   protected $employeeTarget;
 
-  public function __construct(DepartmentTarget $departmentTarget,Department $department,EmployeeTarget $employeeTarget)
+  public function __construct(DepartmentTarget $departmentTarget, Department $department, EmployeeTarget $employeeTarget)
   {
     $this->departmentTarget = $departmentTarget;
     $this->department = $department;
@@ -33,10 +36,9 @@ class DepartmentTargetController extends Controller
    */
   public function index(Request $request)
   {
-    
+
     $departmentTargets = $this->departmentTarget->all();
     return $departmentTargets;
-
   }
   /**
    * Get targets and achievements departments
@@ -46,9 +48,9 @@ class DepartmentTargetController extends Controller
   public function getDepartmentTargetByDepartmentId(Request $request, $id)
   {
     $departmentTargets = $this->departmentTarget
-    ->where('from', 'like', '%' .$request->year . '%')
-    ->where('department_id',$id)
-    ->get();
+      ->where('from', 'like', '%' . $request->year . '%')
+      ->where('department_id', $id)
+      ->get();
     return $departmentTargets;
   }
 
@@ -60,40 +62,52 @@ class DepartmentTargetController extends Controller
    */
   public function store(DepartmentTargetRequest $request)
   {
-    // $dateString = '2021-5-1';
-    // $lastDateOfMonth = date("Y-m-t", strtotime($dateString));
-    // dd($lastDateOfMonth);
+    // $listemployee_month = [];
+    
+    // $department = $this->department->find($request->department_id)->employee;
+    // foreach ($department as $item) {
+    //     $abc = $item->employee_target()->where('from', 'like', '%' . '2021-02' . '%')->get();
+    //     array_push($listemployee_month,$abc);
+    // }
+    // return $listemployee_month;
 
 
-    $department = $this->department->find($request->department_id)->employee;
-    foreach ($department as $item)
 
-      echo $item->username;
-      echo '1';
-    dd(1);
-   
-
-    foreach (range(1, 12) as $month) {
-      $dateFirst_month = $request->year.'-'.$month.'-01';
-      $dateLast_month = date("Y-m-t", strtotime($dateFirst_month));
+    try {
+      DB::beginTransaction();
+      foreach (range(1, 12) as $month) {
+        $dateFirst_month = $request->year . '-' . $month . '-01';
+        $dateLast_month = date("Y-m-t", strtotime($dateFirst_month));
 
 
-      $department_target = $this->departmentTarget->create([
-            'department_id' => $request->department_id,
-            'targets' => $request->targets/12,
-            'from' => $dateFirst_month,
-            'to' => $dateLast_month,
+        $department_target = $this->departmentTarget->create([
+          'department_id' => $request->department_id,
+          'targets' => $request->targets / 12,
+          'achievement' => '0',
+          'from' => $dateFirst_month,
+          'to' => $dateLast_month,
         ]);
-      
-      
 
-      
-      
+        $department = $this->department->find($request->department_id)->employee;
+        foreach ($department as $item) {
+          $employee_target = $this->employeeTarget->create([
+            'user_id' => $item->id,
+            'targets' => $request->targets / 12 / count($department),
+            'achievement' => '0',
+            'from' => $dateFirst_month,
+            'to' => $dateLast_month
+          ]);
+        }
+      }
 
+      DB::commit();
+      return response()->json([
+        'message' => 'Created successfully!',
+      ], 201);
+    } catch (\Exception $exception) {
+      DB::rollBack();
+      Log::error('message:' . $exception->getMessage() . 'Line :' . $exception->getLine());
     }
-    return response()->json([
-      'message' => 'Created successfully!',
-    ], 201);
   }
 
   /**
@@ -103,10 +117,17 @@ class DepartmentTargetController extends Controller
    * @param  int  $id
    * @return \Illuminate\Http\Response
    */
-  public function update(DepartmentRequest $request, $id)
+  public function update(DepartmentTargetUpdateRequest $request, $id)
   {
-    $department = $this->department->find($id);
-    $department->update($request->all());
+
+    $department_target = $this->departmentTarget
+      ->where('department_id', $id)
+      ->where('from', 'like', '%' . $request->year.'-'.$request->month. '%')->first();
+
+    $department_target->update([
+      'targets' => $request->targets,
+    ]);
+    
     return response()->json([
       'message' => 'Updated successfully!',
     ]);
@@ -120,8 +141,16 @@ class DepartmentTargetController extends Controller
    */
   public function softDelete($id)
   {
-    $department = $this->department->find($id);
-    $department->delete();
+    $department_target = $this->departmentTarget
+    ->where('department_id', $id);
+
+    $department_target->delete();
+
+    $department = $this->department->find($id)->employee;
+    foreach ($department as $item) {
+        $abc = $item->employee_target()->delete();
+    }
+
     return response()->json([
       'message' => 'Deleted successfully!',
     ]);
