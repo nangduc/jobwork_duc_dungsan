@@ -25,7 +25,7 @@ class DepartmentTargetRequest extends FormRequest
     {
         return [
             'targets' => 'required|between:0,99.99',
-            'department_id' => 'required|integer|unique:department_targets,deleted_at',
+            'department_id' => 'required|integer|unique:department_targets,department_id,NULL,id,deleted_at,NULL',
             'year' => 'required'
         ];
     }

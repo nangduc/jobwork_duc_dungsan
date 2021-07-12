@@ -139,7 +139,7 @@ class DepartmentTargetController extends Controller
    * @param  array  $ids
    * @return \Illuminate\Http\Response
    */
-  public function softDelete($id)
+  public function softDelete($id) # xoa tat ca muc tieu cua 1 phong ban
   {
     $department_target = $this->departmentTarget
     ->where('department_id', $id);

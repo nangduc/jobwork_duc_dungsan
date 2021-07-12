@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Task;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Http\Request;
 
 class TaskProgressRequest extends FormRequest
 {
@@ -21,17 +24,21 @@ class TaskProgressRequest extends FormRequest
    *
    * @return array
    */
-  public function rules()
+  public function rules(Task $task)
   {
+
     return [
-      'date'                         => 'required|date',
-      'task_id'                      => 'required|integer',
-      'sale_status_id'               => 'nullable|integer',
-      'negotiation_status_id'        => 'nullable|integer',
-      'negotiation_result_status_id' => 'nullable|integer',
-      'accuracy_id'                  => 'nullable|integer',
-      'companion_id'                 => 'nullable|integer',
-      'next_negotiation_date'        => 'nullable|date'
-    ];
-  }
+          'date'                         => 'required|date',
+          'task_id'                      => 'required|integer',
+          'sale_status_id'               => 'nullable|integer',
+          'negotiation_status_id'        => 'nullable|integer',
+          'negotiation_result_status_id' => 'nullable|integer',
+          'accuracy_id'                  => 'nullable|integer',
+          'companion_id'                 => 'nullable|integer',
+          'next_negotiation_date'        => 'nullable|date'
+        ];
+      }
+  
+  
 }
+
