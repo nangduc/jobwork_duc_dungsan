@@ -63,7 +63,7 @@ class DepartmentTargetController extends Controller
   public function store(DepartmentTargetRequest $request)
   {
     // $listemployee_month = [];
-    
+
     // $department = $this->department->find($request->department_id)->employee;
     // foreach ($department as $item) {
     //     $abc = $item->employee_target()->where('from', 'like', '%' . '2021-02' . '%')->get();
@@ -119,18 +119,25 @@ class DepartmentTargetController extends Controller
    */
   public function update(DepartmentTargetUpdateRequest $request, $id)
   {
+    try {
+      DB::beginTransaction();
+      $department_target = $this->departmentTarget
+        ->where('department_id', $id)
+        ->where('from', 'like', '%' . $request->year . '-' . $request->month . '%')->first();
 
-    $department_target = $this->departmentTarget
-      ->where('department_id', $id)
-      ->where('from', 'like', '%' . $request->year.'-'.$request->month. '%')->first();
+      $department_target->update([
+        'targets' => $request->targets,
+      ]);
 
-    $department_target->update([
-      'targets' => $request->targets,
-    ]);
-    
-    return response()->json([
-      'message' => 'Updated successfully!',
-    ]);
+
+      DB::commit();
+      return response()->json([
+        'message' => 'Updated successfully!',
+      ]);
+    } catch (\Exception $exception) {
+      DB::rollBack();
+      Log::error('message:' . $exception->getMessage() . 'Line :' . $exception->getLine());
+    }
   }
 
   /**
@@ -141,18 +148,26 @@ class DepartmentTargetController extends Controller
    */
   public function softDelete($id) # xoa tat ca muc tieu cua 1 phong ban
   {
-    $department_target = $this->departmentTarget
-    ->where('department_id', $id);
+    try {
+      DB::beginTransaction();
+      $department_target = $this->departmentTarget
+        ->where('department_id', $id);
 
-    $department_target->delete();
+      $department_target->delete();
 
-    $department = $this->department->find($id)->employee;
-    foreach ($department as $item) {
+      $department = $this->department->find($id)->employee;
+      foreach ($department as $item) {
         $abc = $item->employee_target()->delete();
-    }
+      }
 
-    return response()->json([
-      'message' => 'Deleted successfully!',
-    ]);
+
+      DB::commit();
+      return response()->json([
+        'message' => 'Deleted successfully!',
+      ]);
+    } catch (\Exception $exception) {
+      DB::rollBack();
+      Log::error('message:' . $exception->getMessage() . 'Line :' . $exception->getLine());
+    }
   }
 }

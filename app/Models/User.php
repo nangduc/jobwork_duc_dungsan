@@ -80,6 +80,9 @@ class User extends Authenticatable
     return $this->belongsTo(Department::class);
   }
 
+  public function employeeTarget(){
+    return $this->hasMany(EmployeeTarget::class);
+  }
   /**
    * Scope a query to paginate users.
    *

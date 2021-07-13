@@ -23,17 +23,24 @@ class Department extends Model
     'manager_id'
   ];
 
+
   public function employee()
   {
-      return $this->hasMany(User::class);
+    return $this->hasMany(User::class);
   }
+
+  public function user()
+  {
+    return $this->hasMany(User::class);
+  }
+
 
   public function children()
   {
     return $this->hasMany(self::class, 'parent_id', 'id');
   }
 
-  
+
   public function departmenttargets()
   {
     return $this->hasMany(DepartmentTarget::class);

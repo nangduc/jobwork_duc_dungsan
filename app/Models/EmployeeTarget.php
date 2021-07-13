@@ -18,4 +18,9 @@ class EmployeeTarget extends Model
       'from',
       'to'
     ];
+
+
+    public function User(){
+      return $this->belongsTo(User::class);
+    }
 }
